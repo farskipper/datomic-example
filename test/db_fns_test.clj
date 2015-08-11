@@ -30,3 +30,18 @@
         (is true)))
 
     (is (= 1 (get-n-users (d/db conn))))))
+
+(deftest test-send-message!
+  (let [conn  (make-db)
+        andy  (add-user! conn "andy"  "Andy"   "Taylor")
+        gomer (add-user! conn "gomer" "Gomer"  "Pyle")
+        barn  (add-user! conn "barn"  "Barney" "Fife")]
+    (is (= 3 (get-n-users (d/db conn))))
+
+    (is (= 0 (get-n-messages (d/db conn))))
+
+    (send-message! conn andy "You beat ever' thing, you know that?" barn)
+    (is (= 1 (get-n-messages (d/db conn))))
+
+    (send-message! conn gomer "howdy, y'all" andy barn)
+    (is (= 2 (get-n-messages (d/db conn))))))
