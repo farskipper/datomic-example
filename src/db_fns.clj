@@ -91,42 +91,30 @@
        username))
 
 (defn everyone-ive-sent-to [db username]
-  (->
-    (d/q '[:find  ?talked-to
-           :in    $ ?username
-           :where
-           [?my-id :user/username       ?username]
+  (d/q '[:find  [?talked-to ...]
+         :in    $ ?username
+         :where
+         [?my-id :user/username       ?username]
 
-           [?mid  :message/from-user-id ?my-id]
-           [?mid  :message/to-user-id   ?uid]
-           [?uid  :user/username        ?talked-to]]
-         db
-         username)
-    seq
-    flatten
-    set))
+         [?mid  :message/from-user-id ?my-id]
+         [?mid  :message/to-user-id   ?uid]
+         [?uid  :user/username        ?talked-to]]
+       db
+       username))
 
 (defn everyone-ive-received [db username]
-  (->
-    (d/q '[:find  ?listened-to
-           :in    $ ?username
-           :where
-           [?my-id :user/username       ?username]
+  (d/q '[:find  [?listened-to ...]
+         :in    $ ?username
+         :where
+         [?my-id :user/username       ?username]
 
-           [?mid  :message/to-user-id   ?my-id]
-           [?mid  :message/from-user-id ?uid]
-           [?uid  :user/username        ?listened-to]]
-         db
-         username)
-    seq
-    flatten
-    set))
+         [?mid  :message/to-user-id   ?my-id]
+         [?mid  :message/from-user-id ?uid]
+         [?uid  :user/username        ?listened-to]]
+       db
+       username))
 
 (defn everyone-ive-messaged-with [db username]
-  (->
-    (concat 
-      (everyone-ive-sent-to db username)
-      (everyone-ive-received db username))
-    seq
-    flatten
-    set))
+  (set (concat
+         (everyone-ive-sent-to db username)
+         (everyone-ive-received db username))))
