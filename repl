@@ -1,0 +1,35 @@
+(use 'db-fns-test)
+(require '[datomic.api :as d])
+(require '[db-fns :refer :all])
+
+(def conn (make-db))
+
+(def andy-id (add-user! conn "andy" "Andy" "Taylor"))
+(def barn-id (add-user! conn "barn" "Barney" "Fife"))
+(def msg1-id (send-message! conn andy-id "Hey barn," barn-id))
+
+(def db0 (d/db conn))
+
+(d/pull db0 '[*] andy-id)
+(d/pull db0 '[:user/firstname] andy-id)
+
+
+(def msg1 (d/entity db0 msg1-id))
+msg1
+(:message/text msg1)
+msg1
+(:message/from-user-id msg1)
+msg1
+(:user/firstname (:message/from-user-id msg1))
+
+
+@(d/transact conn [{:db/id andy-id,  :user/firstname "Opie"}])
+
+(def db1 (d/db conn))
+(def db1-h (d/history db1))
+
+(defn firstnames [db] (d/q '[:find ?username ?firstname :where [?id :user/firstname ?firstname][?id :user/username ?username]] db))
+
+(firstnames db0)
+(firstnames db1)
+(firstnames db1-h)
